@@ -113,7 +113,6 @@ namespace UnprotectOffice
                     MessageBoxButton.OK,
                     MessageBoxImage.Error
                 );
-                Application.Current.Shutdown();
             }
 
             ProgressText.Text = "Done.";
@@ -151,8 +150,30 @@ namespace UnprotectOffice
             switch (type)
             {
                 case 'd':
-                    RemoveFileTextRegex(Path.Combine(path, "word", "settings.xml"), "<w:documentProtection.*?/>");
-                    break;
+                    {
+                        for (int i = 0; i <= 5; i++)
+                        {
+                            try
+                            {
+                                if (i ==0 )
+                                {
+                                    RemoveFileTextRegex(Path.Combine(path, "word", "settings.xml"), "<w:documentProtection.*?/>");
+                                }
+                                else
+                                {
+                                    RemoveFileTextRegex(Path.Combine(path, "word", "settings"+i.ToString()+".xml"), "<w:documentProtection.*?/>");
+                                }
+                            }
+                            catch (FileNotFoundException)
+                            {
+                            }
+                            catch (Exception)
+                            {
+                                throw;
+                            }
+                        }
+                        break;
+                    }
             }
         }
 
