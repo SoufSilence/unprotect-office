@@ -25,6 +25,8 @@ namespace UnprotectOffice
             Title += FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
         }
 
+        private string PickFolderPath = "";
+
         /// <summary>
         ///     Open file picker and refresh label and button based on input
         /// </summary>
@@ -35,7 +37,7 @@ namespace UnprotectOffice
             var dialog = new OpenFileDialog
             {
                 Multiselect = true,
-                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                InitialDirectory = Directory.Exists(PickFolderPath) ? PickFolderPath : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 Filter = "OOXML files|*.docx;*.docm;*.pptx;*.pptm;*.xlsx;*.xlsm"
             };
 
@@ -48,6 +50,7 @@ namespace UnprotectOffice
                 );
 
                 _files = dialog.FileNames;
+                PickFolderPath = Directory.GetParent(dialog.FileName).FullName;
             }
             else
             {
@@ -83,6 +86,7 @@ namespace UnprotectOffice
                 foreach (var file in _files)
                 {
                     var f = FileArray(file);
+                    string transSuffix = "";
 
                     ProgressText.Text = $"Extracting {f[1]}...";
                     var extractPath = ExtractFile(f);
@@ -94,6 +98,7 @@ namespace UnprotectOffice
                     {
                         ProgressText.Text = $"Transforming {f[1]}...";
                         TransMathFormulaToTxt(extractPath);
+                        transSuffix = "-transformed";
                     }
                     
                     ProgressText.Text = $"Compressing {f[1]}...";
@@ -101,13 +106,11 @@ namespace UnprotectOffice
                     ZipFile.CreateFromDirectory(extractPath, newFile);
 
                     ProgressText.Text = $"Saving {f[1]}...";
-                    var backupFile = BackupCheck.IsChecked == true
-                        ? $"{f[4]}{Path.DirectorySeparatorChar}{f[2]}-backup.{f[3]}"
-                        : $"{extractPath}.backup";
+                    var newFilePath = BackupCheck.IsChecked == true
+                        ? $"{f[4]}{Path.DirectorySeparatorChar}{f[2]}-unprotected{transSuffix}.{f[3]}"
+                        : f[0];
 
-                    File.Delete(backupFile);
-                    File.Move(f[0], backupFile);
-                    File.Move(newFile, f[0]);
+                    File.Copy(newFile, newFilePath, true);
 
                     Directory.Delete(new DirectoryInfo(extractPath).Parent.FullName, true);
                 }

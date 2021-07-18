@@ -41,7 +41,7 @@
             <TextBlock x:Name="ProgressText" MaxWidth="72" Padding="4 1" />
             <Button x:Name="UnprotectButton" Click="UnprotectFiles" FontWeight="Bold" Padding="4 1" IsDefault="True"
                     IsEnabled="False">
-                Unprotect
+                Process
             </Button>
         </StackPanel>
         <TextBlock Grid.Row="3" Grid.Column="0" FontSize="8" TextAlignment="Left">© Peng Wang and contributors</TextBlock>
