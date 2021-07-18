@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:UnprotectOffice"
         mc:Ignorable="d"
-        Title="UnprotectOffice " Height="240" Width="352" ResizeMode="CanMinimize" Icon="Icon.ico">
+        Title="UnprotectOffice - with MathToTxt Capability" Height="240" Width="352" ResizeMode="CanMinimize" Icon="Icon.ico">
     <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="1.8*" />
@@ -19,16 +19,22 @@
         </Grid.ColumnDefinitions>
         <TextBlock Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center"
                    TextWrapping="WrapWithOverflow" TextAlignment="Center">
-            Select the file(s) you want to be able to edit and click the "Unprotect" button to proceed. The original file(s) will be replaced by the new, editable one(s).
+            Select the file(s) you want to be able to edit and click the "Unprotect" button to proceed. The original file(s) will be replaced by the new, editable one(s). 
+            <LineBreak/>
+            If you want to transform math formula into txt, check the "Trans formula to txt" box.
         </TextBlock>
         <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal"
                     HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBox x:Name="FilesText" MaxWidth="240" Padding="4 1" IsEnabled="False">None</TextBox>
             <Button Padding="4 1" Click="PickFiles">Browse</Button>
         </StackPanel>
-        <CheckBox x:Name="BackupCheck" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center"
-                  VerticalAlignment="Center" IsChecked="True">
+        <CheckBox x:Name="BackupCheck" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left"
+                  VerticalAlignment="Top" IsChecked="True" Margin="10,5,0,0">
             <TextBlock>Backup original file(s)</TextBlock>
+        </CheckBox>
+        <CheckBox x:Name="MathtransCheck" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left"
+                  VerticalAlignment="Bottom" IsChecked="False" Margin="10,0,0,5">
+            <TextBlock>Trans formula to txt</TextBlock>
         </CheckBox>
         <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center"
                     VerticalAlignment="Center">
@@ -38,14 +44,11 @@
                 Unprotect
             </Button>
         </StackPanel>
-        <TextBlock Grid.Row="3" Grid.Column="0" FontSize="8" TextAlignment="Left">© Raphaël Thériault and contributors</TextBlock>
+        <TextBlock Grid.Row="3" Grid.Column="0" FontSize="8" TextAlignment="Left">© Peng Wang and contributors</TextBlock>
         <StackPanel Grid.Row="3" Grid.Column="1"></StackPanel>
         <TextBlock Grid.Row="3" Grid.Column="1" FontSize="8" TextAlignment="Right">
-            <Hyperlink NavigateUri="https://raftario.github.io/unprotect-office/" RequestNavigate="OpenUri">
-                Website
-            </Hyperlink>
             <Hyperlink NavigateUri="https://github.com/raftario/unprotect-office" RequestNavigate="OpenUri">
-                View source on GitHub
+                Forked from
             </Hyperlink>
         </TextBlock>
     </Grid>

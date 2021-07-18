@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Navigation;
 using Microsoft.Win32;
+using System.Xml;
 
 namespace UnprotectOffice
 {
@@ -89,6 +90,12 @@ namespace UnprotectOffice
                     ProgressText.Text = $"Unprotecting {f[1]}...";
                     Unprotect(extractPath, f[3]);
 
+                    if (MathtransCheck.IsChecked == true)
+                    {
+                        ProgressText.Text = $"Transforming {f[1]}...";
+                        TransMathFormulaToTxt(extractPath);
+                    }
+                    
                     ProgressText.Text = $"Compressing {f[1]}...";
                     var newFile = $"{extractPath}.{f[3]}";
                     ZipFile.CreateFromDirectory(extractPath, newFile);
@@ -155,13 +162,13 @@ namespace UnprotectOffice
                         {
                             try
                             {
-                                if (i ==0 )
+                                if (i == 0)
                                 {
                                     RemoveFileTextRegex(Path.Combine(path, "word", "settings.xml"), "<w:documentProtection.*?/>");
                                 }
                                 else
                                 {
-                                    RemoveFileTextRegex(Path.Combine(path, "word", "settings"+i.ToString()+".xml"), "<w:documentProtection.*?/>");
+                                    RemoveFileTextRegex(Path.Combine(path, "word", "settings" + i.ToString() + ".xml"), "<w:documentProtection.*?/>");
                                 }
                             }
                             catch (FileNotFoundException)
@@ -188,6 +195,64 @@ namespace UnprotectOffice
             fileText = Regex.Replace(fileText, pattern, string.Empty);
             File.WriteAllText(file, fileText);
         }
+
+
+        private static void TransMathFormulaToTxt(string path)
+        {
+            string file = Path.Combine(path, "word", "document.xml");
+
+            string wordURI = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+            string mathURI = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+            // 读取文档
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(file);
+            // 添加命名空间
+            var xmlNsm = new XmlNamespaceManager(xmlDoc.NameTable);
+            xmlNsm.AddNamespace("w", wordURI);
+            xmlNsm.AddNamespace("m", mathURI);
+            // 读取根节点
+            XmlNode xmlNode = xmlDoc.SelectSingleNode("/w:document", xmlNsm);
+            // 将公式转换为文本
+            xmlDoc = transOmathToTxt(xmlDoc, xmlNode, wordURI);
+            // 将结果以不换行的方式写入到xml文件中
+            //using (XmlTextWriter xmlTw = new XmlTextWriter(file, System.Text.Encoding.UTF8))
+            //{
+            //    xmlTw.Formatting = Formatting.None;
+            //    xmlDoc.Save(xmlTw);
+            //}
+            // 将结果以换行的方式写入到xml文件中
+            xmlDoc.Save(file);
+        }
+
+        /// <summary>
+        /// 递归地将word中的公式替换为文本
+        /// </summary>
+        /// <param name="xmlDoc"></param>
+        /// <param name="xmlNode"></param>
+        /// <param name="wordURI"></param>
+        /// <returns></returns>
+        private static XmlDocument transOmathToTxt(XmlDocument xmlDoc, XmlNode xmlNode, string wordURI)
+        {
+            if (xmlNode.HasChildNodes)
+            {
+                for (int nodeNum=0; nodeNum< xmlNode.ChildNodes.Count; nodeNum++)
+                {
+                    if ((xmlNode.ChildNodes[nodeNum].Name == "m:oMathPara") || (xmlNode.ChildNodes[nodeNum].Name == "m:oMath"))
+                    {
+                        XmlNode newNode = xmlDoc.CreateNode(XmlNodeType.Element, "w:r", wordURI);
+                        newNode.AppendChild(xmlDoc.CreateNode(XmlNodeType.Element, "w:t", wordURI));
+                        newNode.FirstChild.InnerText = xmlNode.ChildNodes[nodeNum].InnerText;
+                        xmlNode.ReplaceChild(newNode, xmlNode.ChildNodes[nodeNum]);
+                    }
+                    else
+                    {
+                        xmlDoc = transOmathToTxt(xmlDoc, xmlNode.ChildNodes[nodeNum], wordURI);
+                    }
+                }
+            }
+            return xmlDoc;
+        }
+
 
         /// <summary>
         ///     Create a file information array
